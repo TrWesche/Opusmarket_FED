@@ -1,0 +1,60 @@
+# https://codesource.io/ci-cd-with-github-travis-ci-and-heroku/
+sudo: required
+language: node_js
+node_js:
+  - 14.16.0
+services:
+  - docker
+
+before_script:
+  # Install AWS CLI
+  - echo "Installing AWS CLI"
+  - pip install --user awscli
+  - export PATH=$PATH:$HOME/.local/bin
+
+  # Install Heroku CLI & Login
+  - echo "Installing Heroku CLI"
+  - npm install -g heroku
+
+script:
+  # Build the docker image
+  - docker image build -t ${IMGNAME}:${IMGVERSION} .
+
+  # Run tests
+  - echo "No tests to Run"
+
+after_success:
+  # Push to AWS
+  # http://haoliangyu.github.io/blog/2018/03/19/AWS-ECS-auto-deployment-with-Travis-CI/
+  - echo "Preparing for push to AWS ECR"
+  # aws ecr get-login depends on environment variables: AWS_ACCOUNT_ID, AWS_ACCESS_KEY_ID, and AWS_SECRET_ACCESS_KEY
+  # to authenticate against the aws server.  These values should be provided in the travis environment variables.
+  - aws configure set default.region ${ECS_REGION}
+  - eval $(aws ecr get-login --no-include-email)
+  # Tag the docker image with the repository address appended
+  - docker tag ${IMGNAME}:${IMGVERSION} ${AWS_ACCOUNT_ID}.dkr.ecr.${ECS_REGION}.amazonaws.com/${IMGNAME}:${IMGVERSION}
+  # Push to AWS ECR
+  - docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${ECS_REGION}.amazonaws.com/${IMGNAME}:${IMGVERSION} 
+
+
+
+# Deploy to Heroku
+# deploy:
+#   provider: heroku
+#   api_key:
+#     main: ${HEROKU_API_KEY}
+#   app: opusmarket-fe-docker
+#   on:
+#     branch: main
+
+deploy:
+    provider: script
+    script:
+      # Push to Heroku
+      - echo "Preparing for push to Heroku"
+      - docker login --username=${HEROKU_LOGIN} --password=${HEROKU_API_KEY} registry.heroku.com  #login to registry.heroku.com 
+      - docker tag ${IMGNAME}:${IMGVERSION} registry.heroku.com/${HEROKU_APP}/web
+      - docker push registry.heroku.com/${HEROKU_APP}/web
+      - heroku container:release web --app ${HEROKU_APP}
+    on:
+      branch: main
