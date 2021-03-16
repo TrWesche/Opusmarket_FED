@@ -31,6 +31,10 @@ after_success:
   # to authenticate against the aws server.  These values should be provided in the travis environment variables.
   - aws configure set default.region ${ECS_REGION}
   - eval $(aws ecr get-login --no-include-email)
+
+# Need to look into this version of the aws login & how to make it work properly
+  # - aws ecr get-login-password --region ${ECS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${ECS_REGION}.amazonaws.com
+
   # Tag the docker image with the repository address appended
   - docker tag ${IMGNAME}:${IMGVERSION} ${AWS_ACCOUNT_ID}.dkr.ecr.${ECS_REGION}.amazonaws.com/${IMGNAME}:${IMGVERSION}
   # Push to AWS ECR
@@ -47,14 +51,14 @@ after_success:
 #   on:
 #     branch: main
 
-deploy:
-    provider: script
-    script:
-      # Push to Heroku
-      - echo "Preparing for push to Heroku"
-      - docker login --username=${HEROKU_LOGIN} --password=${HEROKU_API_KEY} registry.heroku.com  #login to registry.heroku.com 
-      - docker tag ${IMGNAME}:${IMGVERSION} registry.heroku.com/${HEROKU_APP}/web
-      - docker push registry.heroku.com/${HEROKU_APP}/web
-      - heroku container:release web --app ${HEROKU_APP}
-    on:
-      branch: main
+# deploy:
+#     provider: script
+#     script:
+#       # Push to Heroku
+#       - echo "Preparing for push to Heroku"
+#       - docker login --username=${HEROKU_LOGIN} --password=${HEROKU_API_KEY} registry.heroku.com  #login to registry.heroku.com 
+#       - docker tag ${IMGNAME}:${IMGVERSION} registry.heroku.com/${HEROKU_APP}/web
+#       - docker push registry.heroku.com/${HEROKU_APP}/web
+#       - heroku container:release web --app ${HEROKU_APP}
+#     on:
+#       branch: main
