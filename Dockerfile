@@ -27,11 +27,14 @@ RUN npm run build
 
 # Specify the starting point image from docker-hub.  In this case its a docker image with nginx preinstalled on alpine linux to serve up the compiled React Application.
 FROM nginx:1.19.7-alpine
+ENV PORT=5001
 
-EXPOSE 80
+EXPOSE $PORT
 
 # Copy the built application to the appropriate location in the nginx Docker Container
 COPY --from=build /app/build /usr/share/nginx/html
-
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+# COPY ["nginx.conf", "/etc/nginx/nginx.conf"]
+CMD sed -i -e 's/$PORT/'"$PORT"'/g' /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
 
 ## Additional Details -> Project Notes:Docker (Not shared in GIT repository) ##
