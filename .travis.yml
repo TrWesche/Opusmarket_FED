@@ -18,7 +18,7 @@ before_script:
 
 script:
   # Build the docker image
-  - docker image build -t ${IMGNAME}:${IMGVERSION} .
+  - docker image build -f Dockerfile.test -t ${IMGNAME}:${IMGVERSION} .
 
   # Run tests
   - echo "No tests to Run"

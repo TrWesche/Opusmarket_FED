@@ -22,7 +22,6 @@ COPY . /app
 RUN npm run build 
 
 
-
 ## Part 2 - Deploy with nginx
 
 # Specify the starting point image from docker-hub.  In this case its a docker image with nginx preinstalled on alpine linux to serve up the compiled React Application.
@@ -33,7 +32,7 @@ COPY --from=build /app/build /usr/share/nginx/html
 
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Command to edit the nginx configuration file with the assigned port.  Heroku automatically creates the PORT environment variable with a random value.
+# Command to edit the nginx configuration file with the assigned port.  Port should be assigned in the target environment.
 CMD sed -i -e 's/$PORT/'"$PORT"'/g' /etc/nginx/nginx.conf && nginx -g 'daemon off;'
 
 ## Additional Details -> Project Notes:Docker (Not shared in GIT repository) ##
