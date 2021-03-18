@@ -6,6 +6,17 @@
 # Specify the starting point image from docker-hub.  In this case its a docker image with node.js preinstalled on alpine linux.
 FROM node:15.9.0-alpine3.10 as build
 
+# Injest the build time variables defined in the heroku.yml and assign them to the appropriate environment variables
+ARG BASE_URL
+ARG OMAPI_PUBLIC_KEY
+ARG SQUARE_APP_ID
+ARG SQUARE_LOC_ID
+
+ENV REACT_APP_BASE_URL=${BASE_URL}
+ENV REACT_APP_OMAPI_PUBLIC_KEY=${OMAPI_PUBLIC_KEY}
+ENV REACT_APP_SQUARE_APP_ID=${SQUARE_APP_ID}
+ENV REACT_APP_SQUARE_LOC_ID=${SQUARE_LOC_ID}
+
 # Set Working Directory for the Container - Assuming the node environment comes with an /app folder based on other guides
 WORKDIR /app
 
